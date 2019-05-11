@@ -34,6 +34,8 @@ function getBasis(name::String,z::Array{SymPy.Sym,1},N::Integer)::Array{SymPy.Sy
     @vars x
     if name=="Legendre"
         basis = legendrePolynomials(x,N); # Add other basis functions
+    else
+        error("Not implemented");
     end
 
     Phi = [];
