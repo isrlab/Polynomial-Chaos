@@ -1,26 +1,12 @@
-# Polynomial Chaos Toolbox in Julia (Based on SymPy)
-# (c) Raktim Bhattacharya
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
-# Contributors:
-# 1. Raktim Bhattacharya -- raktim@tamu.edu
-#    Aerospace Engineering, Texas A&M University
-#
-#
-#
-#
-################################################################################
 using SymPy, Combinatorics, LinearAlgebra
 
 function legendrePolynomials(x::SymPy.Sym,N::Integer)::Array{SymPy.Sym,1}
     P =  Array{SymPy.Sym}(undef,N+1);
     for n in 0:N
         if n == 0
-            p = 0.0+x^0;
+            p = 1;
         elseif n == 1
-            p = 0.0+x;
+            p = x;
         else
             m = n-1;
             p = ((2*m+1)*x*P[n] -m*P[n-1])/n;
@@ -32,7 +18,6 @@ end
 
 function innerProduct(P,Z,rangeZ)
     intP = [];
-
     for p in P
         for (i,z) in enumerate(Z)
             zmin = rangeZ[i,1];
@@ -41,8 +26,7 @@ function innerProduct(P,Z,rangeZ)
         end
         push!(intP,p);
     end
-    X = reshape(intP,size(P));
-    return(X);
+    return(reshape(intP,size(P)));
 end
 
 function getBasis(name::String,z::Array{SymPy.Sym,1},N::Integer)::Array{SymPy.Sym,1}
@@ -57,7 +41,7 @@ function getBasis(name::String,z::Array{SymPy.Sym,1},N::Integer)::Array{SymPy.Sy
         for indices in multiexponents(nvar,n)
             polyBasis = 1;
             for (i,index) in enumerate(indices)
-                polyBasis = polyBasis*subs(basis[index+1],x=>z[i]);
+                polyBasis = simplify(polyBasis*subs(basis[index+1],x=>z[i]));
             end
             push!(Phi,polyBasis);
         end
@@ -72,11 +56,3 @@ function symVec(z::String,nvar::Integer)
     end
     return(Z);
 end
-
-Z = symVec("z",1);
-PDF = 0.5^length(Z);
-rangeZ = repeat([-1 1], length(Z));
-Phi = getBasis("Legendre",Z,5);
-@time intP1 = innerProduct(Phi.*Phi*PDF,Z,rangeZ);
-@time W = innerProduct(Phi*Phi'*PDF,Z,rangeZ);
-print("Done")
