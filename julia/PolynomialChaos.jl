@@ -16,17 +16,22 @@ function legendrePolynomials(x::SymPy.Sym,N::Integer)::Array{SymPy.Sym,1}
     return P
 end
 
+
+# Have to make it typed.
 function innerProduct(P,Z,rangeZ)
-    intP = [];
-    for p in P
-        for (i,z) in enumerate(Z)
+    intP = zeros(prod(size(P)),1);
+    for k=1:length(P)
+        p = P[k];
+        for i=1:length(Z);
+            z = Z[i];
             zmin = rangeZ[i,1];
             zmax = rangeZ[i,2];
             p = integrate(p,(z,zmin,zmax));
         end
-        push!(intP,p);
+        intP[k] = p; #Float64(p);
     end
-    return(reshape(intP,size(P)));
+    X = reshape(intP,size(P));
+    return(X);
 end
 
 function getBasis(name::String,z::Array{SymPy.Sym,1},N::Integer)::Array{SymPy.Sym,1}
@@ -51,7 +56,7 @@ function getBasis(name::String,z::Array{SymPy.Sym,1},N::Integer)::Array{SymPy.Sy
     return(Phi);
 end
 
-function symVec(z::String,nvar::Integer)
+function symVec(z::String,nvar::Integer)::Array{SymPy.Sym,1}
     Z = Array{SymPy.Sym,1}(undef,nvar);
     for i in 1:nvar
         Z[i] = symbols("$(z)$(i)",real=true);
